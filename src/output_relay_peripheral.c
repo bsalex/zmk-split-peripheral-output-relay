@@ -15,7 +15,8 @@
 
 #include <zephyr/logging/log.h>
 
-LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
+LOG_MODULE_REGISTER(zmk_splt_peripheral_output_relay,
+                    CONFIG_ZMK_SPLT_PERIPHERAL_OUTPUT_RELAY_LOG_LEVEL);
 
 #include <zephyr/bluetooth/gatt.h>
 #include <zephyr/bluetooth/uuid.h>
@@ -25,6 +26,14 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #if IS_ENABLED(CONFIG_ZMK_OUTPUT_BEHAVIOR_LISTENER)
 #include <zmk/output/output_generic.h>
+#else
+typedef int (*output_set_value_t)(const struct device *dev, uint8_t value);
+typedef int (*output_get_ready_t)(const struct device *dev);
+
+struct output_generic_api {
+    output_set_value_t set_value;
+    output_get_ready_t get_ready;
+};
 #endif
 
 #if IS_ENABLED(CONFIG_ZMK_SPLT_PERIPHERAL_OUTPUT_RELAY)
@@ -45,8 +54,6 @@ void peripheral_output_event_work_callback(struct k_work *work) {
             continue;
         }
 
-#if IS_ENABLED(CONFIG_ZMK_OUTPUT_BEHAVIOR_LISTENER)
-
         //** TODO: check if in_ev has payload bits
         //         call either api->set_value, or api->set_payload
 
@@ -56,15 +63,12 @@ void peripheral_output_event_work_callback(struct k_work *work) {
             continue;
         }
         api->set_value(output_dev, ev.value);
-
-#endif /* IS_ENABLED(CONFIG_ZMK_OUTPUT_BEHAVIOR_LISTENER) */
-
     }
 }
 
 K_WORK_DEFINE(peripheral_output_event_work, peripheral_output_event_work_callback);
 
-const struct device* virtual_output_device_get_for_relay_channel(uint8_t relay_channel);
+const struct device *virtual_output_device_get_for_relay_channel(uint8_t relay_channel);
 
 static ssize_t split_svc_update_output(struct bt_conn *conn, const struct bt_gatt_attr *attrs,
                                        const void *buf, uint16_t len, uint16_t offset,
@@ -81,10 +85,9 @@ static ssize_t split_svc_update_output(struct bt_conn *conn, const struct bt_gat
     //** TODO: check if len > 2, imply that attrs->user_data has payload bits
     //         before casting to zmk_split_bt_output_relay_event
 
-    memcpy(data + offset, buf, len);
+    memcpy((uint8_t *)data + offset, buf, len);
 
-    struct zmk_split_bt_output_relay_event *in_ev 
-            = (struct zmk_split_bt_output_relay_event *)data;
+    struct zmk_split_bt_output_relay_event *in_ev = (struct zmk_split_bt_output_relay_event *)data;
 
     const struct device *dev = virtual_output_device_get_for_relay_channel(in_ev->relay_channel);
     if (dev == NULL) {
@@ -117,7 +120,6 @@ BT_GATT_SERVICE_DEFINE(
 #endif /* IS_ENABLED(CONFIG_ZMK_SPLT_PERIPHERAL_OUTPUT_RELAY) */
 );
 
-
 #if DT_HAS_COMPAT_STATUS_OKAY(DT_DRV_COMPAT)
 
 struct split_peripheral_output_relay_config {
@@ -125,26 +127,26 @@ struct split_peripheral_output_relay_config {
     const struct device *device;
 };
 
-#define OUTPUT_RELY_CFG_DEFINE(n)                                               \
-    static const struct split_peripheral_output_relay_config config_##n = {     \
-        .relay_channel = DT_PROP(DT_DRV_INST(n), relay_channel),                \
-        .device = DEVICE_DT_GET(DT_INST_PHANDLE(n, device)),                    \
+#define OUTPUT_RELY_CFG_DEFINE(n)                                                                  \
+    static const struct split_peripheral_output_relay_config config_##n = {                        \
+        .relay_channel = DT_PROP(DT_DRV_INST(n), relay_channel),                                   \
+        .device = DEVICE_DT_GET(DT_INST_PHANDLE(n, device)),                                       \
     };
 
 DT_INST_FOREACH_STATUS_OKAY(OUTPUT_RELY_CFG_DEFINE)
 
-const struct device* virtual_output_device_get_for_relay_channel(uint8_t relay_channel) {
-    #define OR_P_COND_CMP_RELAY_CHANNEL(n)                          \
-        if (relay_channel == config_##n.relay_channel) {            \
-            return config_##n.device;                               \
-        }
+const struct device *virtual_output_device_get_for_relay_channel(uint8_t relay_channel) {
+#define OR_P_COND_CMP_RELAY_CHANNEL(n)                                                             \
+    if (relay_channel == config_##n.relay_channel) {                                               \
+        return config_##n.device;                                                                  \
+    }
     DT_INST_FOREACH_STATUS_OKAY(OR_P_COND_CMP_RELAY_CHANNEL)
     return NULL;
 }
 
 #else
 
-const struct device* virtual_output_device_get_for_relay_channel(uint8_t relay_channel) {
+const struct device *virtual_output_device_get_for_relay_channel(uint8_t relay_channel) {
     return NULL;
 }
 

@@ -45,8 +45,8 @@ struct or_peripheral_slot {
 
 static struct or_peripheral_slot peripherals[ZMK_SPLIT_BLE_PERIPHERAL_COUNT];
 
-static const struct bt_uuid_128 split_or_service_uuid = BT_UUID_INIT_128(
-    ZMK_SPLIT_BT_OR_SERVICE_UUID);
+static const struct bt_uuid_128 split_or_service_uuid =
+    BT_UUID_INIT_128(ZMK_SPLIT_BT_OR_SERVICE_UUID);
 
 static int or_peripheral_slot_index_for_conn(struct bt_conn *conn) {
     for (int i = 0; i < ZMK_SPLIT_BLE_PERIPHERAL_COUNT; i++) {
@@ -180,9 +180,8 @@ static uint8_t split_central_service_discovery_func(struct bt_conn *conn,
         return BT_GATT_ITER_STOP;
     }
 
-    if (bt_uuid_cmp(slot->discover_params.uuid, 
-        BT_UUID_DECLARE_128(ZMK_SPLIT_BT_OR_SERVICE_UUID)) != 0
-    ) {
+    if (bt_uuid_cmp(slot->discover_params.uuid,
+                    BT_UUID_DECLARE_128(ZMK_SPLIT_BT_OR_SERVICE_UUID)) != 0) {
         LOG_DBG("Found other service");
         return BT_GATT_ITER_CONTINUE;
     }
@@ -289,8 +288,7 @@ struct k_work_q split_central_split_or_run_q;
 
 #if IS_ENABLED(CONFIG_ZMK_SPLT_PERIPHERAL_OUTPUT_RELAY)
 
-K_MSGQ_DEFINE(zmk_split_central_split_or_run_msgq,
-              sizeof(struct zmk_split_bt_output_relay_event),
+K_MSGQ_DEFINE(zmk_split_central_split_or_run_msgq, sizeof(struct zmk_split_bt_output_relay_event),
               CONFIG_ZMK_SPLIT_BLE_CENTRAL_SPLIT_RUN_QUEUE_SIZE, 4);
 
 void split_central_split_or_run_callback(struct k_work *work) {
@@ -299,7 +297,7 @@ void split_central_split_or_run_callback(struct k_work *work) {
     LOG_DBG("");
 
     while (k_msgq_get(&zmk_split_central_split_or_run_msgq, &event, K_NO_WAIT) == 0) {
-    
+
         for (int i = 0; i < ZMK_SPLIT_BLE_PERIPHERAL_COUNT; i++) {
             if (peripherals[i].state != PERIPHERAL_SLOT_STATE_CONNECTED) {
                 continue;
@@ -315,14 +313,13 @@ void split_central_split_or_run_callback(struct k_work *work) {
             //** TODO: append event.payload into buffer, only if payload_size > 0
 
             int err = bt_gatt_write_without_response(peripherals[i].conn,
-                                                     peripherals[i].update_output_handler,
-                                                     &event, sizeof(event), true);
+                                                     peripherals[i].update_output_handler, &event,
+                                                     sizeof(event), true);
 
             if (err) {
                 LOG_ERR("Failed to write split output characteristic (err %d)", err);
             }
         }
-
     }
 }
 
@@ -384,7 +381,6 @@ static int zmk_split_bt_central_init(void) {
 
 SYS_INIT(zmk_split_bt_central_init, APPLICATION, CONFIG_ZMK_BLE_INIT_PRIORITY);
 
-
 #if DT_HAS_COMPAT_STATUS_OKAY(DT_DRV_COMPAT)
 
 struct split_peripheral_output_relay_config {
@@ -392,27 +388,25 @@ struct split_peripheral_output_relay_config {
     const struct device *device;
 };
 
-#define OUTPUT_RELY_CFG_DEFINE(n)                                               \
-    static const struct split_peripheral_output_relay_config config_##n = {     \
-        .relay_channel = DT_PROP(DT_DRV_INST(n), relay_channel),                \
-        .device = DEVICE_DT_GET(DT_INST_PHANDLE(n, device)),                    \
+#define OUTPUT_RELY_CFG_DEFINE(n)                                                                  \
+    static const struct split_peripheral_output_relay_config config_##n = {                        \
+        .relay_channel = DT_PROP(DT_DRV_INST(n), relay_channel),                                   \
+        .device = DEVICE_DT_GET(DT_INST_PHANDLE(n, device)),                                       \
     };
 
 DT_INST_FOREACH_STATUS_OKAY(OUTPUT_RELY_CFG_DEFINE)
 
 uint8_t relay_channel_get_for_device(const struct device *device) {
-    #define OR_C_COND_CMP_RELAY_CHANNEL(n)            \
-        if (device == config_##n.device) {            \
-            return config_##n.relay_channel;          \
-        }
+#define OR_C_COND_CMP_RELAY_CHANNEL(n)                                                             \
+    if (device == config_##n.device) {                                                             \
+        return config_##n.relay_channel;                                                           \
+    }
     DT_INST_FOREACH_STATUS_OKAY(OR_C_COND_CMP_RELAY_CHANNEL)
     return -1;
 }
 
 #else
 
-uint8_t relay_channel_get_for_device(const struct device *device) {
-    return -1;
-}
+uint8_t relay_channel_get_for_device(const struct device *device) { return -1; }
 
 #endif /* DT_HAS_COMPAT_STATUS_OKAY(DT_DRV_COMPAT) */

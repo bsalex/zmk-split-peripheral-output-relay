@@ -1,0 +1,6 @@
+s/.*Welcome to ZMK!.*/&/p
+s/.*hid_listener_keycode_pressed.*/&/p
+s/.*Spy driver set_value called.*/&/p
+s/.*Test inject behavior pressed.*/&/p
+s/.*Inject behavior initialized.*/&/p
+s/.*Trigger output change.*/&/p

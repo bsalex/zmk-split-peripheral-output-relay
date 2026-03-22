@@ -1,0 +1,5 @@
+description: Spy Relay Driver
+
+compatible: "zmk,output-relay-spy"
+
+include: base.yaml

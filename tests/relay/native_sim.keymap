@@ -1,0 +1,49 @@
+#include <dt-bindings/zmk/keys.h>
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/kscan_mock.h>
+
+/ {
+    keymap {
+        compatible = "zmk,keymap";
+        default_layer {
+            bindings = <&test_inject>;
+        };
+    };
+
+    behaviors {
+        test_inject: test_inject {
+            compatible = "zmk,behavior-test-inject";
+            #binding-cells = <0>;
+            status = "okay";
+        };
+    };
+
+	test_relay: test_relay {
+		compatible = "zmk,split-peripheral-output-relay";
+		relay-channel = <1>;
+		device = <&test_device>;
+	};
+
+	test_device: test_device {
+		compatible = "zmk,output-relay-spy"; 
+        status = "okay";
+	};
+
+    spy_relay: spy_relay {
+        compatible = "zmk,split-peripheral-output-relay";
+        relay-channel = <0>;
+        device = <&spy_device>;
+    };
+
+    spy_device: spy_device {
+        compatible = "zmk,output-relay-spy";
+        status = "okay";
+    };
+};
+
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(0,0,10)
+        ZMK_MOCK_RELEASE(0,0,10)
+    >;
+};

@@ -7,9 +7,15 @@
 
 DT_COMPAT_ZMK_SPLT_PERIPHERAL_OUTPUT_RELAY := zmk,split-peripheral-output-relay
 config ZMK_SPLT_PERIPHERAL_OUTPUT_RELAY
-		bool
-		default $(dt_compat_enabled,$(DT_COMPAT_ZMK_SPLT_PERIPHERAL_OUTPUT_RELAY))
+		bool "Enable Split Peripheral Output Relay"
+		default y
+		imply ZMK_SPLIT
+		imply ZMK_SPLIT_ROLE_PERIPHERAL
 
 config ZMK_SPLIT_SPLT_PERIPHERAL_OUTPUT_QUEUE_SIZE
     int "Max number of split peripheral output events to queue when received from central"
     default 5
+
+module = ZMK_SPLT_PERIPHERAL_OUTPUT_RELAY
+module-str = zmk_splt_peripheral_output_relay
+source "subsys/logging/Kconfig.template.log_config"

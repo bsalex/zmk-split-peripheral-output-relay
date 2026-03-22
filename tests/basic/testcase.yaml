@@ -1,0 +1,11 @@
+common:
+  platform_allow:
+    - native_sim
+  tags:
+    - app
+    - zmk
+
+tests:
+  basic:
+    extra_configs:
+      - CONFIG_ZMK_SPLIT_ROLE_CENTRAL=y

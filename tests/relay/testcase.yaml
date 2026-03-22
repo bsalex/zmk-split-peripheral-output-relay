@@ -1,0 +1,12 @@
+common:
+  platform_allow:
+    - native_sim
+  tags:
+    - app
+    - zmk
+
+tests:
+  relay:
+    extra_args: CONF_FILE="prj.conf"
+    extra_configs:
+      - CONFIG_ZMK_TEST_INJECT=y

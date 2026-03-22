@@ -1,0 +1,2 @@
+zmk_behavior_test_trigger: Test trigger pressed: channel 1
+zmk_behavior_test_trigger: Mock invoke output: channel 0 value 42

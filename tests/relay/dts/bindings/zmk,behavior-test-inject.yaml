@@ -1,0 +1,4 @@
+description: Test Inject Behavior
+
+compatible: "zmk,behavior-test-inject"
+
