@@ -310,8 +310,6 @@ void split_central_split_or_run_callback(struct k_work *work) {
                 continue;
             }
 
-            //** TODO: append event.payload into buffer, only if payload_size > 0
-
             int err = bt_gatt_write_without_response(peripherals[i].conn,
                                                      peripherals[i].update_output_handler, &event,
                                                      sizeof(event), true);

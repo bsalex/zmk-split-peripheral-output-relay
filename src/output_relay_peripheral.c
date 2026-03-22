@@ -54,9 +54,6 @@ void peripheral_output_event_work_callback(struct k_work *work) {
             continue;
         }
 
-        //** TODO: check if in_ev has payload bits
-        //         call either api->set_value, or api->set_payload
-
         const struct output_generic_api *api = (const struct output_generic_api *)output_dev->api;
         if (api->set_value == NULL) {
             LOG_WRN("No enable() api assigned on device %s", output_dev->name);
@@ -82,9 +79,6 @@ static ssize_t split_svc_update_output(struct bt_conn *conn, const struct bt_gat
         return BT_GATT_ERR(BT_ATT_ERR_INVALID_OFFSET);
     }
 
-    //** TODO: check if len > 2, imply that attrs->user_data has payload bits
-    //         before casting to zmk_split_bt_output_relay_event
-
     memcpy((uint8_t *)data + offset, buf, len);
 
     struct zmk_split_bt_output_relay_event *in_ev = (struct zmk_split_bt_output_relay_event *)data;
@@ -94,9 +88,6 @@ static ssize_t split_svc_update_output(struct bt_conn *conn, const struct bt_gat
         LOG_DBG("Unable to retrieve virtual device for channel: %d", in_ev->relay_channel);
         return len;
     }
-
-    //** TODO: check if in_ev has payload bits
-    //         direct pass payload_size and payload to zmk_split_output_event
 
     struct zmk_split_output_event ev = {
         .dev = dev,
