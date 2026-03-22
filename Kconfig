@@ -8,9 +8,7 @@
 DT_COMPAT_ZMK_SPLT_PERIPHERAL_OUTPUT_RELAY := zmk,split-peripheral-output-relay
 config ZMK_SPLT_PERIPHERAL_OUTPUT_RELAY
 		bool "Enable Split Peripheral Output Relay"
-		default y
-		imply ZMK_SPLIT
-		imply ZMK_SPLIT_ROLE_PERIPHERAL
+		depends on ZMK_SPLIT
 
 config ZMK_SPLIT_SPLT_PERIPHERAL_OUTPUT_QUEUE_SIZE
     int "Max number of split peripheral output events to queue when received from central"
